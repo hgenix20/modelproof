@@ -223,4 +223,4 @@ Be strict with scoring. A perfect 1.00 means the assistant addressed every user 
 }
 
 export { RiskAuditorAgent };
-export type { AuditItem, AuditResult, ChatMessage }; 
+export type { AuditItem, AuditResult, ChatMessage };

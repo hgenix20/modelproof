@@ -1,9 +1,9 @@
-# ModelProof
+# ModelProof: Sentinel AI Chat
 
 [![ModelProof Logo](src/assets/ModelProof.png)](src/assets/ModelProof.png)
 
 > **Hackathon Category:** Javascript/Typescript 
-> **Demo Video (≤ 5 min):** [Watch on YouTube](https://youtu.be/your-demo-link)  
+> **Demo Video (≤ 5 min):** [Watch on YouTube](https://youtu.be/qPX_TDM4DSE)  
 
 ModelProof is a real-time, agent-driven AI chat system that cross-validates responses from multiple large language models and performs safety audits on each reply—flagging hallucinations, bias, toxicity, and misalignment. Built with modular agents, it delivers trustworthy AI interactions out of the box.
 

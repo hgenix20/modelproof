@@ -239,7 +239,7 @@ export function ChatWindow({ onAuditUpdate, onAnalysisStart, onAuditError = () =
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter your security query..."
+            placeholder="Enter your question or request..."
             disabled={isLoading}
             className="flex-1 p-2 border rounded-lg bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

@@ -94,7 +94,7 @@ class CrossModelRAGAgent {
 
     // If responses are different, combine them
     return {
-      text: `${primaryResponse.text}\n\nAdditional perspective:\n${secondaryResponse.text}`,
+      text: `${primaryResponse.text}\n\n\n**Additional perspective:**\n${secondaryResponse.text}`,
       confidence: (primaryResponse.confidence + secondaryResponse.confidence) / 2,
       model: `${primaryResponse.model} + ${secondaryResponse.model}`,
       timestamp: new Date(),

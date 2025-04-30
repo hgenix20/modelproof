@@ -204,7 +204,7 @@ export function AuditPanel({ result, isAnalyzing, error, analysisProgress }: Aud
       <div className="flex flex-col h-full">
         <div className="p-4 border-b">
           <h2 className="text-xl font-semibold text-gray-800">Security Audit</h2>
-          <p className="text-sm text-gray-500">Waiting for analysis...</p>
+          <p className="text-sm text-gray-500">Waiting for AI response...</p>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center text-gray-500">
