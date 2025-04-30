@@ -3,6 +3,16 @@ import { config } from '../config';
 import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
 
+/**
+ * Represents a response from an AI model.
+ * @interface ModelResponse
+ * @property {string} content - The generated text content
+ * @property {Object} [usage] - Token usage statistics
+ * @property {number} [usage.prompt_tokens] - Number of tokens in the prompt
+ * @property {number} [usage.completion_tokens] - Number of tokens in the completion
+ * @property {number} [usage.total_tokens] - Total number of tokens used
+ * @property {string} model - The name of the model that generated the response
+ */
 interface ModelResponse {
   content: string;
   usage?: {
@@ -13,6 +23,13 @@ interface ModelResponse {
   model: string;
 }
 
+/**
+ * Extended Error type for Azure API errors.
+ * @interface AzureError
+ * @extends {Error}
+ * @property {string} statusCode - HTTP status code as string
+ * @property {Object} [response] - Response object containing status information
+ */
 interface AzureError extends Error {
   statusCode: string;
   response?: {
@@ -20,6 +37,11 @@ interface AzureError extends Error {
   };
 }
 
+/**
+ * Custom error class for rate limit errors.
+ * @class RateLimitError
+ * @extends {Error}
+ */
 export class RateLimitError extends Error {
   constructor(message: string) {
     super(message);
@@ -27,12 +49,38 @@ export class RateLimitError extends Error {
   }
 }
 
+/**
+ * Type guard to check if an error is an AzureError.
+ * @function isAzureError
+ * @param {unknown} error - The error to check
+ * @returns {boolean} True if the error is an AzureError
+ */
 function isAzureError(error: unknown): error is AzureError {
   return error instanceof Error && 
          typeof (error as AzureError).statusCode === 'string' && 
          'response' in error;
 }
 
+/**
+ * Queries an AI model with automatic fallback to alternative models on rate limits.
+ * 
+ * @async
+ * @function queryModelWithFallback
+ * @param {'MAI' | 'phi35' | 'openai'} modelType - The type of model to query
+ * @param {string} systemPrompt - The system prompt for the model
+ * @param {string} userPrompt - The user's input prompt
+ * @param {(token: string) => void} onToken - Callback for streaming tokens
+ * @returns {Promise<ModelResponse>} The model's response
+ * @throws {Error} If both primary and fallback models fail
+ * 
+ * @example
+ * const response = await queryModelWithFallback(
+ *   'MAI',
+ *   'You are a helpful assistant.',
+ *   'What is the capital of France?',
+ *   (token) => console.log(token)
+ * );
+ */
 export async function queryModelWithFallback(
   modelType: 'MAI' | 'phi35' | 'openai',
   systemPrompt: string,
@@ -68,6 +116,19 @@ export async function queryModelWithFallback(
   }
 }
 
+/**
+ * Queries the GitHub-hosted AI model.
+ * 
+ * @async
+ * @function queryGitHubModel
+ * @param {'MAI' | 'phi35' | 'openai'} modelType - The type of model to query
+ * @param {string} systemPrompt - The system prompt for the model
+ * @param {string} userPrompt - The user's input prompt
+ * @param {(token: string) => void} onToken - Callback for streaming tokens
+ * @returns {Promise<ModelResponse>} The model's response
+ * @throws {RateLimitError} If the API rate limit is exceeded
+ * @throws {Error} For other API errors
+ */
 async function queryGitHubModel(
   modelType: 'MAI' | 'phi35' | 'openai',
   systemPrompt: string,
@@ -114,6 +175,18 @@ async function queryGitHubModel(
   };
 }
 
+/**
+ * Queries the Hugging Face model as a fallback option.
+ * 
+ * @async
+ * @function queryHuggingFaceModel
+ * @param {'MAI' | 'phi35' | 'openai'} modelType - The type of model to query
+ * @param {string} systemPrompt - The system prompt for the model
+ * @param {string} userPrompt - The user's input prompt
+ * @param {(token: string) => void} onToken - Callback for streaming tokens
+ * @returns {Promise<ModelResponse>} The model's response
+ * @throws {Error} If the API request fails
+ */
 export async function queryHuggingFaceModel(
   modelType: 'MAI' | 'phi35' | 'openai',
   systemPrompt: string,

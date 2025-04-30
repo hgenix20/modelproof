@@ -1,43 +1,80 @@
 # ModelProof
 
-ModelProof is a multi-model validation and LLM safety auditing system designed to ensure trustworthy AI interactions. It verifies language model responses across multiple sources and audits them for risk, bias, hallucination, and alignment issues using a real-time, agent-driven approach.
+[![ModelProof Logo](src/assets/ModelProof.png)](src/assets/ModelProof.png)
 
-##  Features
+> **Hackathon Category:** Javascript/Typescript 
+> **Demo Video (≤ 5 min):** [Watch on YouTube](https://youtu.be/your-demo-link)  
 
-- **Multi-Model Validation**: Simultaneously query two or more large language models (LLMs) and cross-check their responses for consistency
-- **Intent Alignment Auditing**: Evaluates whether the assistant's responses across the entire conversation align with the user's intent
-- **Risk Analysis by Response**: Each assistant response is audited individually for hallucination, bias, and toxicity
-- **Real-Time Audit Panel**: View detailed breakdowns of safety risks, alignment explanations, and flagged content
-- **Extensible Agent Framework**: Supports modular expansion for additional models or audit agents
-- **Fallback Safety**: Built-in fallback and retry logic to recover from model or API outages
+ModelProof is a real-time, agent-driven AI chat system that cross-validates responses from multiple large language models and performs safety audits on each reply—flagging hallucinations, bias, toxicity, and misalignment. Built with modular agents, it delivers trustworthy AI interactions out of the box.
 
-##  Architecture
+---
 
-The system consists of three main components:
+## Features
 
-1. **CrossModelRAGAgent**: Queries multiple LLMs and validates their responses against each other
-2. **RiskAuditorAgent**: Evaluates text for hallucination, bias, toxicity, and intent alignment
-3. **apiUtils**: Manages API communication with LLM providers with built-in fallback mechanisms
+- **Multi-Model Validation**  
+  Query two LLMs in parallel (Meta-Llama-3 & AI21-Jamba-1.5), compare confidence and similarity, and automatically select the best answer or present both when divergent.  
+- **Risk Analysis by Response**  
+  Audit every response for hallucination, bias, toxicity, and intent alignment using the RiskAuditorAgent.  
+- **Real-Time Audit Panel**  
+  Color-coded ✅/⚠️/❌ indicators with scores and detailed explanations, all updated live as tokens stream in.  
+- **Agentic Framework**  
+  Clear separation of concerns:  
+  1. **CrossModelRAGAgent** handles multi-model queries and validation  
+  2. **RiskAuditorAgent** performs safety auditing  
+  3. **Coordinator** orchestrates fallbacks, retries, and UI integration  
+- **Built-In Fallbacks**  
+  Automatically retry with alternate providers (GitHub AI → HuggingFace Gradio) on rate limits or failures.  
+- **Extensible & Configurable**  
+  Easily swap in new models or add custom audit agents via a unified `ModelResponse` interface.
 
-### Component Interaction
+---
 
+## Architecture
+
+High-level component diagram:
+[![ModelProof Sequence Diagram](src/assets/ModelProof-Sequence-Diagram.png)](src/assets/ModelProof-Sequence-Diagram.png)
 ```mermaid
-graph TD
-    A[User Input] --> B[CrossModelRAGAgent]
-    B --> C[apiUtils]
-    C --> D[Primary LLM]
-    C --> E[Secondary LLM]
-    B --> F[RiskAuditorAgent]
-    F --> G[Risk Assessment]
-    G --> H[Audit Panel]
+sequenceDiagram
+    autonumber
+    participant CW as ChatWindow.tsx
+    participant AP as AuditPanel.tsx
+    participant OR as Agent Coordinator
+    participant AU as RiskAuditorAgent
+    participant RAG as CrossModelRAGAgent
+    participant MAI as Meta-Llama-3-Instruct
+    participant JMB as AI21-Jamba-1.5
+    participant PHI as phi-3-mini-128k
+    participant AZ as Azure AI Inference Client
+
+    CW->>OR: prompt
+    OR->>AU: audit request
+    OR->>RAG: forward prompt
+
+    RAG->>MAI: primary
+    RAG->>JMB: secondary
+
+    MAI->>AZ: inference call
+    JMB->>AZ: inference call
+
+    RAG->>CW: response
+
+    AU->>PHI: audit
+
+    PHI->>AZ: inference call
+
+    AZ->>AU: phi result
+    AU->>AP: display audit result
 ```
 
 ## Tech Stack
 
 - **Frontend**: React, TypeScript, Tailwind CSS
 - **Backend**: Node.js, TypeScript
-- **APIs**: GitHub AI, HuggingFace (extensible to other providers)
+- **AI Inference**: Azure AI Client (Streaming), HuggingFace Gradio Client
+- **CI/CD**: GitHub Actions
+- **APIs**: GitHub AI, HuggingFace
 - **Build Tools**: Vite, npm
+- **Diagramming**: Mermaid
 
 ## Installation
 
@@ -59,9 +96,15 @@ graph TD
    VITE_HUGGINGFACE_TOKEN=my_huggingface_api_token
    ```
 
-4. Start the development server:
+4. Run locally:
    ```bash
    npm run dev
+   ```
+
+5. Build for production:
+   ```bash
+   npm run build
+   npm run preview
    ```
 
 ##  Configuration
@@ -69,24 +112,23 @@ graph TD
 The system can be configured through environment variables and the `config` object:
 
 ```typescript
-const config = {
+export const config = {
+  similarityThreshold: 0.8,
+  maxRetries: 3,
   models: {
     MAI: {
       github: "meta/Meta-Llama-3-8B-Instruct",
       huggingface: "meta-llama/Meta-Llama-3-8B-Instruct"
     },
-    phi35: {
-      github: "microsoft/phi-3-mini-128k-instruct",
-      huggingface: "microsoft/phi-3-mini-128k-instruct"
-    },
-    openai: {
+    JMB: {
       github: "ai21-labs/AI21-Jamba-1.5-Large",
       huggingface: "ai21-labs/AI21-Jamba-1.5-Large"
+    },
+    PHI: {
+      github: "microsoft/phi-3-mini-128k-instruct",
+      huggingface: "microsoft/phi-3-mini-128k-instruct"
     }
-  },
-  similarityThreshold: 0.8,
-  maxRetries: 3,
-  fallbackModel: "phi35"
+  }
 };
 ```
 
@@ -98,26 +140,6 @@ The system evaluates four key metrics:
 2. **Bias Score**: Identifies potential biases and stereotypes
 3. **Toxicity Score**: Assesses harmful or inappropriate content
 4. **Intent Alignment Score**: Measures how well responses align with user intent
-
-##  Security
-
-### API Tokens and Environment Variables
-
-The project uses environment variables to securely store API tokens and sensitive configuration. Never commit these values to version control.
-
-1. Create a `.env` file in the root directory with the following structure:
-   ```env
-   VITE_GITHUB_TOKEN=my_github_api_token
-   VITE_API_ENDPOINT=https://models.github.ai/inference
-   VITE_HUGGINGFACE_TOKEN=my_huggingface_api_token
-   ```
-
-2. The `.gitignore` file is configured to exclude:
-   - All `.env` files
-   - Environment-specific files
-   - Build artifacts
-   - Dependencies
-   - Editor configurations
 
 ### Security Best Practices
 
@@ -142,8 +164,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ##  Acknowledgments
 
 - Meta for Llama models
-- Microsoft for Phi models
 - AI21 Labs for Jamba models
+- Microsoft for Phi models & Azure AI Inference
 - The open-source community for various tools and libraries
 
 ##  Contact

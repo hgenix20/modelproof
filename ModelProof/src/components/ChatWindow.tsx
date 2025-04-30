@@ -6,6 +6,14 @@ import { AuditResult } from '../agents/RiskAuditorAgent';
 import { config } from '../config';
 import { RateLimitError, queryHuggingFaceModel } from '../utils/modelFallback';
 
+/**
+ * Represents a message in the chat conversation.
+ * @interface Message
+ * @property {'user' | 'assistant'} role - The sender of the message
+ * @property {string} content - The message content
+ * @property {string} [model] - The AI model used to generate the response
+ * @property {string} [error] - Error message if the response failed
+ */
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -13,6 +21,14 @@ interface Message {
   error?: string;
 }
 
+/**
+ * Props for the ChatWindow component.
+ * @interface ChatWindowProps
+ * @property {(result: AuditResult) => void} onAuditUpdate - Callback when audit results are available
+ * @property {() => void} onAnalysisStart - Callback when analysis begins
+ * @property {(error: string) => void} [onAuditError] - Callback for audit errors
+ * @property {(type: 'hallucination' | 'bias' | 'toxicity' | 'intent_alignment') => void} [onAuditProgress] - Callback for audit progress updates
+ */
 interface ChatWindowProps {
   onAuditUpdate: (result: AuditResult) => void;
   onAnalysisStart: () => void;
@@ -20,6 +36,23 @@ interface ChatWindowProps {
   onAuditProgress?: (type: 'hallucination' | 'bias' | 'toxicity' | 'intent_alignment') => void;
 }
 
+/**
+ * A React component that provides a chat interface for interacting with AI models.
+ * Handles message input, display, and automatic security auditing of responses.
+ * Supports fallback to alternative models when rate limits are encountered.
+ * 
+ * @component
+ * @param {ChatWindowProps} props - Component props
+ * @returns {JSX.Element} The rendered chat window
+ * 
+ * @example
+ * <ChatWindow
+ *   onAuditUpdate={(result) => console.log(result)}
+ *   onAnalysisStart={() => console.log('Analysis started')}
+ *   onAuditError={(error) => console.error(error)}
+ *   onAuditProgress={(type) => console.log(`Progress: ${type}`)}
+ * />
+ */
 export function ChatWindow({ onAuditUpdate, onAnalysisStart, onAuditError = () => {}, onAuditProgress }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');

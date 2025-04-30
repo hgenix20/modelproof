@@ -1,3 +1,11 @@
+/**
+ * Represents a single audit item in the security analysis.
+ * @interface AuditItem
+ * @property {string} id - Unique identifier for the audit item
+ * @property {'warning' | 'error' | 'info'} type - Severity level of the audit item
+ * @property {string} message - Description of the audit finding
+ * @property {Date} timestamp - When the audit item was detected
+ */
 interface AuditItem {
   id: string;
   type: 'warning' | 'error' | 'info';
@@ -5,6 +13,18 @@ interface AuditItem {
   timestamp: Date;
 }
 
+/**
+ * Represents the complete audit results for a model response.
+ * @interface AuditResult
+ * @property {string} summary - High-level summary of the audit findings
+ * @property {AuditItem[]} items - Detailed list of audit findings
+ * @property {Object} scores - Numerical scores for different risk categories
+ * @property {number} scores.hallucination - Score for hallucination risk (0-1)
+ * @property {number} scores.bias - Score for bias risk (0-1)
+ * @property {number} scores.toxicity - Score for toxicity risk (0-1)
+ * @property {number} scores.intent_alignment - Score for intent alignment (0-1)
+ * @property {string} explanation - Detailed explanation of the audit results
+ */
 interface AuditResult {
   summary: string;
   items: AuditItem[];
@@ -17,6 +37,14 @@ interface AuditResult {
   explanation: string;
 }
 
+/**
+ * Props for the AuditPanel component.
+ * @interface AuditPanelProps
+ * @property {AuditResult} [result] - The audit results to display
+ * @property {boolean} [isAnalyzing] - Whether an audit is currently in progress
+ * @property {string} [error] - Error message if the audit failed
+ * @property {Object} [analysisProgress] - Progress status for each analysis type
+ */
 interface AuditPanelProps {
   result?: AuditResult;
   isAnalyzing?: boolean;
@@ -29,6 +57,27 @@ interface AuditPanelProps {
   };
 }
 
+/**
+ * A React component that displays security audit results for AI model responses.
+ * Shows risk scores for hallucination, bias, toxicity, and intent alignment,
+ * along with detailed findings and progress indicators.
+ * 
+ * @component
+ * @param {AuditPanelProps} props - Component props
+ * @returns {JSX.Element} The rendered audit panel
+ * 
+ * @example
+ * <AuditPanel
+ *   result={auditResult}
+ *   isAnalyzing={false}
+ *   analysisProgress={{
+ *     hallucination: 'complete',
+ *     bias: 'complete',
+ *     toxicity: 'complete',
+ *     intent_alignment: 'complete'
+ *   }}
+ * />
+ */
 export function AuditPanel({ result, isAnalyzing, error, analysisProgress }: AuditPanelProps) {
   const getRiskIcon = (score: number, isIntentAlignment = false) => {
     if (isIntentAlignment) {
