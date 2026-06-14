@@ -9,6 +9,16 @@ ModelProof is a real-time, agent-driven AI chat system that cross-validates resp
 
 ---
 
+## 🏆 Award
+
+**Microsoft AI Agents Hackathon 2025 — JavaScript/TypeScript Category Winner**
+
+ModelProof was recognized as a category winner in the [Microsoft AI Agents Hackathon 2025](https://techcommunity.microsoft.com/blog/azuredevcommunityblog/ai-agents-hackathon-2025-%E2%80%93-category-winners-showcase/4415088). The official submission is on record at [issue #517](https://github.com/microsoft/AI_Agents_Hackathon/issues/517).
+
+📄 [Winners Showcase (PDF)](./AI%20Agents%20Hackathon%202025%20-%20Category%20Winners%20Showcase.pdf)
+
+---
+
 ## Features
 
 - **Multi-Model Validation**  
